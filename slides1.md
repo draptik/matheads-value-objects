@@ -20,7 +20,7 @@ Patrick Drechsler
 #### Was unterscheided ein Value Object von einem Domain Object (aka Entity)?
 
 - Id
-- Lebenszykus
+- Lebenszyklus
 
 
 #### Was sind Value Objects?
@@ -44,18 +44,20 @@ public class Customer
     public string EMailAddress { get; set; }
 }
 ```
-Probleme:
-- Datentyp `string` passt nicht wirklich zu EMail Adresse.
-- `EMailAddress` hat einen public setter. 
+Probleme: <!-- .element: class="fragment" data-fragment-index="1" -->
+- Datentyp 'string' passt nicht wirklich zu EMail Adresse. <!-- .element: class="fragment" data-fragment-index="1" -->
+- EMailAddress hat einen public setter. <!-- .element: class="fragment" data-fragment-index="1" -->
 
 
 ```
-public class Customer {
+public class Customer 
+{
     //...
     public EMailAddress EMailAddress { get; set; }
 }
 
-public class EMailAddress {
+public class EMailAddress 
+{
     public EMailAddress(string value)
     {
         if (!IsValidEmailAddress(value)) 
@@ -64,15 +66,33 @@ public class EMailAddress {
 
     private bool IsValidEmailAddress(string value)
     {
-        try {
+        try 
+        {
             new System.Net.Mail.MailAddress(value).Address = value;
         }
         catch { return false; }
     }
 }
 ```
-- Mail Adresse ist immer gueltig
-// - Das klaert nicht die Frage, ob eine Email fuer den Customer verpflichtend ist (dazu spaeter mehr beim Specification Pattern)
+Mail Adresse ist immer gueltig <!-- .element: class="fragment" data-fragment-index="1" -->
+<!-- Das klaert nicht die Frage, ob eine Email fuer den Customer verpflichtend ist (dazu spaeter mehr beim Specification Pattern) -->
+
+
+Ist das eine gueltige EMail?
+
+foo@bar
+
+
+oder das?
+
+localhost@patrick
+
+
+```txt
+[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_
+`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]
+(?:[a-z0-9-]*[a-z0-9])?
+```
 
 
 
@@ -137,10 +157,13 @@ Fazit: Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die 
 
 
 ### Microtypes
-Fun fact: Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. Vortraege sind gut!
+Fun fact: Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. 
+
+Darum sind Vortraege sind gut!
 
 
 ### Microtypes
+
 Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dachte ich auch urspruenglich).
 
 
@@ -151,9 +174,12 @@ Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dac
 ```csharp
 public class InternalEMailAddress 
     : ValueObject<InternalEMailAddress> {
-    public class InternalEMailAddress(EMAilAddress mailAddress) {
-        if (!IsInternalEMailAddress()) { /* throw */ }
-        Value = mailAddress;
+
+    public class InternalEMailAddress(EMAilAddress value) {
+        
+        if (!IsInternalEMailAddress(value)) { /* throw */ }
+        
+        Value = value;
     }
     //...
 }
@@ -179,11 +205,20 @@ Muss der setter fuer das Attribut wirklich `public` sein? Langt nicht `internal`
 
 Kann man die Klasse als Value Object beim ORM registrieren?
 
-Bsp Entity Framework:
-```
-TODO ComplexType<EMAilAddress>
-```
+Ja
 
+
+Bsp Entity Framework (`ComplexType`)
+
+```csharp
+ public class MyDbContext
+{
+    protected override void OnModelCreating(DbModelBuilder mb) 
+    {
+        mb.ComplexType<EMailAddress>();
+    }
+}   
+ ```
 
 Alternative: ORM nicht verwenden
 
