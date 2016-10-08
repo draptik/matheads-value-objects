@@ -16,12 +16,20 @@ Patrick Drechsler
 
 #### Was sind Value Objects?
 
+
+#### Was unterscheided ein Value Object von einem Domain Object (aka Entity)?
+
+- Id
+- Lebenszykus
+
+
+#### Was sind Value Objects?
+
 - Value Objects
     - sind Objekte ohne Id (immutable)
     - haben attributbasierte Vergleichbarkeit
     - sind "Behavior-Rich"
     - sind "Cohesive" (verbinden zB Wert und Einheit)
-
 
 
 ...hat jeder wahrscheinlich schon mal gesehen:
@@ -68,7 +76,8 @@ public class EMailAddress {
 
 
 
-Vergleichbarkeit ist attributbasiert
+### Vergleichbarkeit ist attributbasiert
+
 
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> {
@@ -114,7 +123,10 @@ public class EMailAddress : ValueObject<EMAilAddress> {
 }
 ```
 
-Fazit: Man ueberschreibt die Equals und GetHashCode Methoden, damit nur die Attribute (aka Properties) verglichen werden.
+
+### Vergleichbarkeit ist attributbasiert
+
+Fazit: Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
 
 
 
@@ -159,7 +171,21 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 - Value Objects sollten immutable sein.
 - Problem: Wenn Domaenen Objekte 1-zu-1 mit einem ORM gemapped werden.
     - ORM braucht einen Proxy der Klasse
-        - Jedes Attribute muss einen public setter haben
+        - Jedes Attribut muss einen public setter haben
+
+
+Muss der setter fuer das Attribut wirklich `public` sein? Langt nicht `internal` oder `protected`?
+
+
+Kann man die Klasse als Value Object beim ORM registrieren?
+
+Bsp Entity Framework:
+```
+TODO ComplexType<EMAilAddress>
+```
+
+
+Alternative: ORM nicht verwenden
 
 
 
