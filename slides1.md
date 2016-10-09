@@ -14,22 +14,17 @@ Patrick Drechsler
 
 
 
-#### Was sind Value Objects?
+#### Was sind Entitaeten?
 
-
-#### Was unterscheided ein Value Object von einem Domain Object (aka Entity)?
-
-- Id
-- Lebenszyklus
+- Id <!-- .element: class="fragment" data-fragment-index="1" -->
+- Lebenszyklus<!-- .element: class="fragment" data-fragment-index="1" -->
 
 
 #### Was sind Value Objects?
 
-- Value Objects
-    - sind Objekte ohne Id (immutable)
-    - haben attributbasierte Vergleichbarkeit
-    - sind "Behavior-Rich"
-    - sind "Cohesive" (verbinden zB Wert und Einheit)
+- Objekte ohne Id (immutable)
+- haben attributbasierte Vergleichbarkeit
+- "Cohesive" (verbinden zB Wert und Einheit)
 
 
 ...hat jeder wahrscheinlich schon mal gesehen:
@@ -53,7 +48,7 @@ Probleme: <!-- .element: class="fragment" data-fragment-index="1" -->
 public class Customer 
 {
     //...
-    public EMailAddress EMailAddress { get; set; }
+    public EMailAddress EMailAddress { get; private set; }
 }
 
 public class EMailAddress 
@@ -102,7 +97,8 @@ localhost@patrick
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> {
     
-    protected abstract IEnumerable<object> GetAttributesToIncludeInEqualityCheck();
+    protected abstract IEnumerable<object> 
+        GetAttributesToIncludeInEqualityCheck();
 
     public override bool Equals(object other) {
         return Equals(other as T);
@@ -150,12 +146,6 @@ Fazit: Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die 
 
 
 
-"Behavior Rich" werde ich ueberspringen
-
-(jetzt koennte man auch ein Attribut `DisplayEmailName` einfuehren.)
-
-
-
 ### Microtypes
 Fun fact: Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. 
 
@@ -175,13 +165,13 @@ Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dac
 public class InternalEMailAddress 
     : ValueObject<InternalEMailAddress> {
 
-    public class InternalEMailAddress(EMAilAddress value) {
+    // ctor
+    public InternalEMailAddress(EMAilAddress value) {
         
         if (!IsInternalEMailAddress(value)) { /* throw */ }
         
         Value = value;
     }
-    //...
 }
 ```
 
@@ -193,6 +183,8 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 
 
 ### Frameworks und Value Objects
+
+include some funny pictures...
 
 - Value Objects sollten immutable sein.
 - Problem: Wenn Domaenen Objekte 1-zu-1 mit einem ORM gemapped werden.
@@ -220,7 +212,12 @@ Bsp Entity Framework (`ComplexType`)
 }   
  ```
 
+
 Alternative: ORM nicht verwenden
+
+
+#### Wie speichert man Listen von Value Objects?
+string: JSON, XML, ...
 
 
 
@@ -239,8 +236,8 @@ public class Customer {
 ```
 
 
-- EMail ist ein Pflichtfeld
-- Wie waers mit einer `IsValid` Methode?
+- EMail ist ein Pflichtfeld ☑
+- Wie waers mit einer **IsValid** Methode?
 ```csharp
 public class Customer {
     //..
