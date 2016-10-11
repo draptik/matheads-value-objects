@@ -282,7 +282,6 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
         - Jedes Attribut muss einen public setter haben
 
 
-
 Muss der setter fuer das Attribut wirklich `public` sein? Langt nicht `internal` oder `protected`?
 
 
