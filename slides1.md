@@ -5,36 +5,97 @@ Patrick Drechsler
 
 
 
+### No Bashing!
+
+Wer schreibt Code?
+
+Wer sitzt in Meetings?
+
+
+
 ### Inhalt
 
-- Value Objects: Warum?
+- Value Objects: Was ist das - und warum braucht man das?
 - Microtypes: Was ist das?
 - Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id", und "was mache ich mit Collections?"
 - Specification Pattern: Validierung im Kontext einer Entitaet
 
 
+...kurzer Ausflug C# vs Java...
 
-#### Was sind Entitaeten?
+(no Java-Bashing, I promise)
+
+
+```java
+// Java
+public class Customer {
+
+    private string name;
+
+    public void setName(string value) {
+        this.name = value;
+    }
+
+    public string getName() {
+        return this.name;
+    }
+}
+```
+
+```csharp
+// C#
+public class Customer 
+{
+    public string Name { get; set; }
+}
+```
+
+
+```java
+// Java
+public class Customer {
+
+    private string name;    
+
+    public Customer(string name) { this.name = name; }
+
+    public string getName() { return this.name; }
+}
+```
+
+```csharp
+// C#
+public class Customer 
+{
+    public Customer(string name) { this.Name = name; }
+
+    public string Name { get; }
+}
+```
+
+
+
+#### Was ist eine Entity?
 
 - Id <!-- .element: class="fragment" data-fragment-index="1" -->
 - Lebenszyklus<!-- .element: class="fragment" data-fragment-index="1" -->
 
 
-#### Was sind Value Objects?
+#### Was ist ein Value Object?
 
-- Objekte ohne Id (immutable)
-- haben attributbasierte Vergleichbarkeit
-- "Cohesive" (verbinden zB Wert und Einheit)
+- Objekt ohne Id (immutable)
+- hat attributbasierte Vergleichbarkeit
+- ist oft "Cohesive" (verbindet z.B. Wert und Einheit)
 
 
-...hat jeder wahrscheinlich schon mal gesehen:
+#### Wie erkennt man Value Objects?
+
+
+...hat wahrscheinlich jeder schon mal gesehen:
 ```csharp
 public class Customer
 {
     public int Id { get; set; } // evtl. in einer Entity-BaseClass 
-    //...
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
     //...
     public string EMailAddress { get; set; }
 }
@@ -44,13 +105,15 @@ Probleme: <!-- .element: class="fragment" data-fragment-index="1" -->
 - EMailAddress hat einen public setter. <!-- .element: class="fragment" data-fragment-index="1" -->
 
 
-```
+```csharp
 public class Customer 
 {
     //...
     public EMailAddress EMailAddress { get; private set; }
 }
+```
 
+```csharp
 public class EMailAddress 
 {
     public EMailAddress(string value)
@@ -94,6 +157,24 @@ localhost@patrick
 ### Vergleichbarkeit ist attributbasiert
 
 
+Exkurs Vergleichbarkeit
+
+
+Equality by reference
+![equality-by-reference](resources/equality-reference.png)
+http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+
+
+Equality by identifier
+![equality-by-identifier](resources/equality-identifier.png)
+http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+
+
+Equality by structure
+![equality-by-structure](resources/equality-structural.png)
+http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+
+
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> {
     
@@ -126,23 +207,30 @@ public abstract class ValueObject<T> where T : ValueObject<T> {
         return hash;
     }
 }
-
-public class EMailAddress : ValueObject<EMAilAddress> {
-    public EMailAddress(string value) { 
-        if (!IsValidEmailAddress(value)) { /* throw */ }
-        Value = value;
-    }
-    public string Value { get; }
-    public override IEnumerable<object> GetAttributesToIncludeInEqualityCheck() {
-        return new object[] { Value };
-    }
-}
 ```
 
 
-### Vergleichbarkeit ist attributbasiert
+```csharp
+public class EMailAddress : ValueObject<EMAilAddress> 
+{
+    public EMailAddress(string value) 
+    { 
+        if (!IsValidEmailAddress(value)) { /* throw */ }
+        Value = value;
+    }
+    
+    public string Value { get; }
+    
+    public override IEnumerable<object> GetAttributesToIncludeInEqualityCheck() 
+    {
+        return new object[] { Value };
+    }
+```
 
-Fazit: Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
+
+### Fazit: Vergleichbarkeit fuer Value Objects
+
+Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
 
 
 

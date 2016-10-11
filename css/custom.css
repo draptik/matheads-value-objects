@@ -1,3 +1,9 @@
 .reveal pre code {
+    /*
+        decreasing the 'font-size' is not enough: 
+        'line-spacing', etc must also be adopted.
+    */
+    /*font-size: 80%;
+    line-height: 80%;*/
     max-height: 600px;
 }
