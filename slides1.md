@@ -272,12 +272,15 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 
 ### Frameworks und Value Objects
 
-include some funny pictures...
+
+![fun-framework](resources/fun-frameworks-any.jpg)
+
 
 - Value Objects sollten immutable sein.
 - Problem: Wenn Domaenen Objekte 1-zu-1 mit einem ORM gemapped werden.
     - ORM braucht einen Proxy der Klasse
         - Jedes Attribut muss einen public setter haben
+
 
 
 Muss der setter fuer das Attribut wirklich `public` sein? Langt nicht `internal` oder `protected`?
@@ -302,6 +305,7 @@ Bsp Entity Framework (`ComplexType`)
 
 
 Alternative: ORM nicht verwenden
+
 
 
 #### Wie speichert man Listen von Value Objects?
