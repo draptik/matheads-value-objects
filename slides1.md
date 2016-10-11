@@ -221,7 +221,8 @@ public class EMailAddress : ValueObject<EMAilAddress>
     
     public string Value { get; }
     
-    public override IEnumerable<object> GetAttributesToIncludeInEqualityCheck() 
+    public override IEnumerable<object> 
+        GetAttributesToIncludeInEqualityCheck() 
     {
         return new object[] { Value };
     }
@@ -293,7 +294,7 @@ Ja
 Bsp Entity Framework (`ComplexType`)
 
 ```csharp
- public class MyDbContext
+public class MyDbContext
 {
     protected override void OnModelCreating(DbModelBuilder mb) 
     {
