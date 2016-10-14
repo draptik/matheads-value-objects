@@ -1,11 +1,13 @@
+.reveal pre {
+    font-size: 0.45em; /* default value: 0.55em */
+    line-height: 1.2em;  /* default value: 1.2em */
+}
 .reveal pre code {
-    /*
-        decreasing the 'font-size' is not enough: 
-        'line-spacing', etc must also be adopted.
-    */
-    /*font-size: 80%;
-    line-height: 80%;*/
-    max-height: 600px;
+    max-height: 700px;
 }
 
 img[alt=fun-framework] { width: 1000px; }
+
+.small a {
+    font-size: medium;
+}

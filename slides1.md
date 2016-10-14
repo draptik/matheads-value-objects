@@ -5,11 +5,9 @@ Patrick Drechsler
 
 
 
-### No Bashing!
+Wer praktiziert DDD*?
 
-Wer schreibt Code?
-
-Wer sitzt in Meetings?
+(*Domain Driven Design)
 
 
 
@@ -17,7 +15,8 @@ Wer sitzt in Meetings?
 
 - Value Objects: Was ist das - und warum braucht man das?
 - Microtypes: Was ist das?
-- Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id", und "was mache ich mit Collections?"
+- Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id"
+- Persistenz: "was mache ich mit Collections?"
 - Specification Pattern: Validierung im Kontext einer Entitaet
 
 
@@ -91,6 +90,17 @@ public class Customer
 #### Wie erkennt man Value Objects?
 
 
+##### Typische Kandidaten
+
+- String-Werte, die fuer die Domaene von Bedeutung sind
+    - IP Adresse
+    - IBAN
+- Kombinationen aus Betrag und Waehrung/Einheit
+    - Betrag und Waehrung (42 EUR)
+    - Wert und Einheit (23.4 kg)
+- Adresse
+
+
 ...hat wahrscheinlich jeder schon mal gesehen:
 ```csharp
 public class Customer
@@ -120,7 +130,11 @@ public class EMailAddress
     {
         if (!IsValidEmailAddress(value)) 
             throw new MyInvalidEMailAddressException(value);
+        
+        Value = value;
     }
+
+    public string Value { get; }
 
     private bool IsValidEmailAddress(string value)
     {
@@ -132,18 +146,6 @@ public class EMailAddress
     }
 }
 ```
-Mail Adresse ist immer gueltig <!-- .element: class="fragment" data-fragment-index="1" -->
-<!-- Das klaert nicht die Frage, ob eine Email fuer den Customer verpflichtend ist (dazu spaeter mehr beim Specification Pattern) -->
-
-
-Ist das eine gueltige EMail?
-
-foo@bar
-
-
-oder das?
-
-localhost@patrick
 
 
 ```txt
@@ -152,6 +154,37 @@ localhost@patrick
 (?:[a-z0-9-]*[a-z0-9])?
 ```
 
+
+```csharp
+public class Customer 
+{
+    //...
+    public EMailAddress EMailAddress { get; private set; }
+}
+```
+
+- Die Klasse Customer kann nur gueltige Email Adresse haben 
+- Das klaert nicht die Frage, ob eine Email fuer den Customer verpflichtend ist (dazu spaeter mehr beim Specification Pattern)
+
+
+```csharp
+public void DoSomething(EMailAddress mailOrig, EMailAddress mailNew)
+{
+    if (mailOrig.Equals(mailNew)) 
+    {
+        // do foo...
+    }
+    else 
+    {
+        // do bar...
+    }
+
+    if (mailOrig == mailNew)
+    {
+        // do baz...
+    }
+}
+```
 
 
 ### Vergleichbarkeit ist attributbasiert
@@ -162,22 +195,54 @@ Exkurs Vergleichbarkeit
 
 Equality by reference
 ![equality-by-reference](resources/equality-reference.png)
-http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+<span class="small">http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/</span>
 
 
 Equality by identifier
 ![equality-by-identifier](resources/equality-identifier.png)
-http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+<span class="small">http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/</span>
 
 
 Equality by structure
 ![equality-by-structure](resources/equality-structural.png)
-http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/
+<span class="small">http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/</span>
 
 
 ```csharp
-public abstract class ValueObject<T> where T : ValueObject<T> {
-    
+public abstract class ValueObject<T> where T : ValueObject<T> 
+{
+    protected abstract IEnumerable<object> 
+        GetAttributesToIncludeInEqualityCheck();
+}    
+```
+
+
+```csharp
+public abstract class ValueObject<T> where T : ValueObject<T> 
+{
+    protected abstract IEnumerable<object> 
+        GetAttributesToIncludeInEqualityCheck();
+
+    public bool Equals(T other) {
+        if (other == null) { return false }
+        return GetAttributesToIncludeInEqualityCheck().
+            .SequenceEqual(other.GetAttributesToIncludeInEqualityCheck());
+    }
+
+    public override int GetHashCode() {
+        int hash = 17;
+        foreach (var obj in this.GetAttributesToIncludeInEqualityCheck())
+            hash = hash * 31 + (obj == null ? 0 : obj.GetHashCode());
+        
+        return hash;
+    }
+}    
+```
+
+
+```csharp
+public abstract class ValueObject<T> where T : ValueObject<T> 
+{
     protected abstract IEnumerable<object> 
         GetAttributesToIncludeInEqualityCheck();
 
@@ -226,24 +291,33 @@ public class EMailAddress : ValueObject<EMAilAddress>
     {
         return new object[] { Value };
     }
+}
 ```
 
 
-### Fazit: Vergleichbarkeit fuer Value Objects
+#### Fazit: Vergleichbarkeit fuer Value Objects
 
 Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
+
+Bonus: Testen ist sehr einfach<!-- .element: class="fragment" data-fragment-index="1" -->
 
 
 
 ### Microtypes
-Fun fact: Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. 
+
+
+#### Fun fact 
+
+Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. 
+
+![fun-faceplam](resources/fun-picard-microtypes-ups.jpg)
 
 Darum sind Vortraege sind gut!
 
 
 ### Microtypes
 
-Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dachte ich auch urspruenglich).
+Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dachte ich urspruenglich).
 
 
 ### Microtypes
@@ -277,39 +351,92 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 ![fun-framework](resources/fun-frameworks-any.jpg)
 
 
-- Value Objects sollten immutable sein.
-- Problem: Wenn Domaenen Objekte 1-zu-1 mit einem ORM gemapped werden.
-    - ORM braucht einen Proxy der Klasse
-        - Jedes Attribut muss einen public setter haben
+#### Frameworks...
+
+- Als ich angefangen habe, war .NET "einfacher" als Java weil es weniger Frameworks gab.
+- .NET Frameworks haben von anderer gelernt und oft "reifere" Implementierungen nachgeliefert 
+- Und jetzt: <!-- .element: class="fragment" data-fragment-index="1" -->
+    - .NET Core API: moving target <!-- .element: class="fragment" data-fragment-index="1" -->
+    - und ich habe Javascript kennengelernt... <!-- .element: class="fragment" data-fragment-index="2" -->
+    - waehrend dieses Talks wurde wahrscheinlich ein neues Javascript-Framework entwickelt <!-- .element: class="fragment" data-fragment-index="2" -->
 
 
-Muss der setter fuer das Attribut wirklich `public` sein? Langt nicht `internal` oder `protected`?
+#### Frameworks and Value Objects
 
+- Value Objects sollten immutable sein
+- ORM (Objec-Relational-Mapper) <!-- .element: class="fragment" data-fragment-index="1" -->
+    - Domaenen Objekte 1-zu-1 mit einem ORM abzubilden <!-- .element: class="fragment" data-fragment-index="1" -->
+        - Framework braucht Proxy der Klasse <!-- .element: class="fragment" data-fragment-index="2" -->
+            - Jedes Attribut muss einen public setter haben <!-- .element: class="fragment" data-fragment-index="2" -->
+            - Constructor muss parameterlos sein <!-- .element: class="fragment" data-fragment-index="2" -->
+
+
+Muss der setter fuer das Attribut wirklich `public` sein? 
+
+Langt nicht 
+- `internal` oder
+- `protected`?
+
+
+Oder noch besser:
 
 Kann man die Klasse als Value Object beim ORM registrieren?
 
-Ja
+Ja 
+
+(NHibernate und Entity Framework)
 
 
-Bsp Entity Framework (`ComplexType`)
+Bsp Entity Framework
 
 ```csharp
 public class MyDbContext
 {
+    //...
     protected override void OnModelCreating(DbModelBuilder mb) 
     {
         mb.ComplexType<EMailAddress>();
     }
 }   
  ```
+Warum das ComplexType heisst, ist mir auch ein Raetsel...
 
 
 Alternative: ORM nicht verwenden
 
+(gerade im Umfeld von CQRS und Eventsourcing)
 
 
 #### Wie speichert man Listen von Value Objects?
-string: JSON, XML, ...
+
+DDD: Ist das wirklich eine Collection?<!-- .element: class="fragment" data-fragment-index="1" -->
+
+Kann man die Liste von EMail-Adressen nicht abbilden als:<!-- .element: class="fragment" data-fragment-index="2" -->
+- HomeEMailAddress<!-- .element: class="fragment" data-fragment-index="2" -->
+- WorkEMailAddress<!-- .element: class="fragment" data-fragment-index="2" -->
+- OtherEMailAddress<!-- .element: class="fragment" data-fragment-index="2" -->
+
+Fazit: Die Frage, wie man das technisch loest, wird umgangen.<!-- .element: class="fragment" data-fragment-index="3" -->
+
+
+#### Wie speichert man Listen von Value Objects?
+
+hier wird es interessant!
+
+serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-index="0" -->
+
+
+![fun-collections](resources/fun-picard-serializing-collections.jpg)
+
+
+##### Die Frage sollte sein:
+
+- Wenn man eine **grosse** Collection von Value Objects hat: 
+    - Sind das dann wirklich noch Value Objects und nicht eher Entitaeten?
+    - oder einfach nur Ids/URLs auf einen anderen Storage?
+        - In-Memory (Redis)
+        - Search Engine (Solar, Elastic)
+        - andere Big Data Loesungen
 
 
 
