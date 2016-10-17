@@ -17,7 +17,7 @@ Wer praktiziert DDD*?
 - Microtypes: Was ist das?
 - Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id"
 - Persistenz: "was mache ich mit Collections?"
-- Specification Pattern: Validierung im Kontext einer Entitaet
+- Specification Pattern: Business Regeln (auch zwischen Entitaeten)
 
 
 ...kurzer Ausflug Java vs C#...
@@ -74,23 +74,23 @@ public class Customer
 
 
 
-#### Was ist eine Entity?
+### Was ist eine Entity?
 
 - Id <!-- .element: class="fragment" data-fragment-index="1" -->
 - Lebenszyklus<!-- .element: class="fragment" data-fragment-index="1" -->
 
 
-#### Was ist ein Value Object?
+### Was ist ein Value Object?
 
 - Objekt ohne Id (immutable)
 - hat attributbasierte Vergleichbarkeit
 - ist oft "Cohesive" (verbindet z.B. Wert und Einheit)
 
 
-#### Wie erkennt man Value Objects?
+### Wie erkennt man Value Objects?
 
 
-##### Typische Kandidaten
+#### Typische Kandidaten
 
 - String-Werte, die fuer die Domaene von Bedeutung sind
     - IP Adresse
@@ -295,11 +295,22 @@ public class EMailAddress : ValueObject<EMAilAddress>
 ```
 
 
-#### Fazit: Vergleichbarkeit fuer Value Objects
+#### Vergleichbarkeit fuer Value Objects
 
 Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
 
 Bonus: Testen ist sehr einfach<!-- .element: class="fragment" data-fragment-index="1" -->
+
+
+### Fazit: Value Objects
+
+Wenn der Basistyp (z.B. string) eigentlich ein Konzept der Domaene ist
+
+- Beispiele:
+    - EMail Adresse
+    - IP Adresse
+    - Zahl und Einheit/Waehrung
+    - Adresse
 
 
 
@@ -398,7 +409,7 @@ public class MyDbContext
         mb.ComplexType<EMailAddress>();
     }
 }   
- ```
+```
 Warum das ComplexType heisst, ist mir auch ein Raetsel...
 
 
@@ -425,6 +436,8 @@ hier wird es interessant!
 
 serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-index="0" -->
 
+(wenn man eine relationale DB verwendet)<!-- .element: class="fragment" data-fragment-index="0" -->
+
 
 ![fun-collections](resources/fun-picard-serializing-collections.jpg)
 
@@ -432,27 +445,37 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
 ##### Die Frage sollte sein:
 
 - Wenn man eine **grosse** Collection von Value Objects hat: 
-    - Sind das dann wirklich noch Value Objects und nicht eher Entitaeten?
-    - oder einfach nur Ids/URLs auf einen anderen Storage?
-        - In-Memory (Redis)
-        - Search Engine (Solar, Elastic)
-        - andere Big Data Loesungen
+    - Sind das dann wirklich noch Value Objects und nicht eher Entitaeten?<!-- .element: class="fragment" data-fragment-index="0" -->
+    - Ist NoSQL besser geeignet (z.B. MongoDb)?<!-- .element: class="fragment" data-fragment-index="1" -->
+    - oder einfach nur Ids/URLs auf einen anderen Storage?<!-- .element: class="fragment" data-fragment-index="2" -->
+        - In-Memory (Redis)<!-- .element: class="fragment" data-fragment-index="2" -->
+        - Search Engine (Solar, Elastic)<!-- .element: class="fragment" data-fragment-index="2" -->
+        - andere Big Data Loesungen<!-- .element: class="fragment" data-fragment-index="2" -->
 
 
 
 ### Specification Pattern
 
-Zurueck zu Entitaeten... 
+Business Regeln in eigene Objekte auslagern<!-- .element: class="fragment" data-fragment-index="0" -->
 
 
->"A specification pattern outlines a business rule that is combinable with other business rules."
+*"A specification pattern outlines a business rule **that is combinable with other business rules**."*
 
-![uml-specification-pattern](resources/Specification_UML_v2.png)
-
+<!-- ![uml-specification-pattern](resources/Specification_UML_v2.png) -->
 <span class="small">https://en.wikipedia.org/wiki/Specification_pattern</span>
 
 
-Also zB dem Customer Objekt
+*"Business rules often do not fit the responsibility of any of the obvious Entities or Value Objects, and their variety and combinations can overwhelm the basic meaning of the domain object. **But moving the rules out of the domain layer is even worse, since the domain code no longer expresses the model.**"*
+
+Eric Evans in Domain Driven Design
+
+
+*"Specification pattern is a pattern that allows us to **encapsulate some piece of domain knowledge into a single unit** – specification – and reuse it in different parts of the code base."*
+
+Vladimir Khorikov
+
+
+Also z.B. dem Customer Objekt
 
 ```csharp
 public class Customer {
@@ -462,7 +485,7 @@ public class Customer {
 ```
 
 
-- EMail ist ein Pflichtfeld ☑
+- EMail ist ein Pflichtfeld
 - Wie waers mit einer **IsValid** Methode?
 ```csharp
 public class Customer {
@@ -509,39 +532,51 @@ public class Customer
 
 Nett, aber das geht noch besser: Regeln koennen auch miteinander kombiniert werden.
 
-Beispiel von Wikipedia:
 
-- Rechnung ist ueberfaellig
-- Mahnung wurde verschickt
-- Noch nicht bei Inkasso
+Beispiel von M. Fowler & E. Evans (Wikipedia):
+
+- Wenn
+    - Rechnung ueberfaellig UND
+    - Mahnung verschickt UND
+    - Noch nicht bei Inkasso
+
+- Dann
+    - Beauftrage Inkasso mit Rechnung
+
 
 ```csharp
-var OverDue = new OverDueSpecification();
-var NoticeSent = new NoticeSentSpecification();
-var InCollection = new InCollectionSpecification();
+// service class
+var overDue = new OverDueSpecification();
+var noticeSent = new NoticeSentSpecification();
+var inCollection = new InCollectionSpecification();
 
 // example of specification pattern logic chaining
-var SendToCollection = OverDue.And(NoticeSent).And(InCollection.Not());
+var sendToCollection = overDue.And(noticeSent).And(inCollection.Not());
 
-var InvoiceCollection = Service.GetInvoices();
+var invoiceCollection = anotherService.GetInvoices();
 
-foreach (var currentInvoice in InvoiceCollection) {
-    if (SendToCollection.IsSatisfiedBy(currentInvoice))  {
+foreach (var currentInvoice in invoiceCollection) {
+    if (sendToCollection.IsSatisfiedBy(currentInvoice))  {
         currentInvoice.SendToCollection();
     }
 }
 ```
+- Rechnung ("Invoice")
+- Rechnung ist ueberfaellig ("OverDue")
+- Mahnung wurde verschickt ("NoticeSent")
+- Noch nicht bei Inkasso ("InCollection.Not()")
 
 
+Wie ermoeglicht man die Kombinierbarkeit der Specifications?
 ```csharp
 public interface ISpecification<T>
 {
     bool IsSatisfiedBy(T entity);
     ISpecification<T> And(ISpecification<T> other);
-    ISpecification<T> AndNot(ISpecification<T> other);
-    ISpecification<T> Or(ISpecification<T> other);
-    ISpecification<T> OrNot(ISpecification<T> other);
     ISpecification<T> Not();
+    //ISpecification<T> AndNot(ISpecification<T> other);
+    //ISpecification<T> Or(ISpecification<T> other);
+    //ISpecification<T> OrNot(ISpecification<T> other);
 }
 ```
 
@@ -557,25 +592,11 @@ public abstract class CompositeSpecification<T> : ISpecification<T>
         return new AndSpecification<T>(this, other);
     }
 
-    public ISpecification<T> AndNot(ISpecification<T> other)
-    {
-        return new AndNotSpecification<T>(this, other);
-    }
-
-    public ISpecification<T> Or(ISpecification<T> other)
-    {
-        return new OrSpecification<T>(this, other);
-    }
-
-    public ISpecification<T> OrNot(ISpecification<T> other)
-    {
-        return new OrNotSpecification<T>(this, other);
-    }
-
     public ISpecification<T> Not()
     {
         return new NotSpecification<T>(this);
     }
+    //...
 }
 ```
 
@@ -601,49 +622,177 @@ public class AndSpecification<T> : CompositeSpecification<T>
 ```
 
 
-OrSpecification
+NotSpecification
 ```csharp
-public class OrSpecification<T> : CompositeSpecification<T>
+public class NotSpecification<T> : CompositeSpecification<T>
 {
-    private readonly ISpecification<T> left;
-    private readonly ISpecification<T> right;
+    private readonly ISpecification<T> other;
 
-    public OrSpecification(ISpecification<T> left, ISpecification<T> right)
+    public NotSpecification(ISpecification<T> other)
     {
-        this.left = left;
-        this.right = right;
+        this.other = other;
     }
 
     public override bool IsSatisfiedBy(T candidate)
     {
-        return left.IsSatisfiedBy(candidate) || right.IsSatisfiedBy(candidate);
+        return !other.IsSatisfiedBy(candidate);
     }
 }
 ```
 
 
-Ist das ein Anti-Pattern?
+#### Ist das ein Anti-Pattern?
 
-- Inner-Plattform effect: `And()` implementiert Plattform-Methode `&&`
+- Inner-Plattform effect: "And()" implementiert Plattform-Methode "&&"
 - Spaghetti-Code: Potentielle Kohaesion wird in eigene Klassen aufgeteilt
 
 
 Alternative Loesung ohne Specification Pattern:
 
 ```csharp
-var InvoiceCollection = Service.GetInvoices();
-foreach (Invoice currentInvoice in InvoiceCollection) {
+//.. in the service class
+var invoiceCollection = Service.GetInvoices();
+foreach (Invoice currentInvoice in invoiceCollection) 
+{
     currentInvoice.SendToCollectionIfNecessary();
 }
 
-//.. in the Invoice partial class:
-
-public bool ShouldSendToCollection { get { return currentInvoice.OverDue && currentInvoice.NoticeSent && currentInvoice.InCollection == false; }}
-
-public void SendToCollectionIfNecessary()
+public class Invoice
 {
-    //Guard condition - with each of those new properties
-    if (!ShouldSendToCollection) return;
-    this.SendToCollection();
+    public bool ShouldSendToCollection 
+    { 
+        get 
+        { 
+            return this.OverDue && this.NoticeSent && this.InCollection == false; 
+        }
+    }
+
+    public void SendToCollectionIfNecessary()
+    {
+        if (!ShouldSendToCollection) return;
+        this.SendToCollection();
+    }
 }
-``` 
+```
+
+
+Was ist mit Regeln, die objektuebergreifend sind?
+
+
+Z.B.: Eine EMail darf nur einem Kunden zugewiesen sein
+
+Anders ausgedrueckt: Das Anlegen eines neuen Kunden soll unterbunden werden, wenn die EMail schon einem anderen Kunden zugewiesen ist. 
+
+
+Spaetestens jetzt genuegt das einzelne Kundenobjekt nicht mehr. 
+
+Wir muessen eine externe Quelle anzapfen.
+
+
+Unsere Business Regel kann nicht mehr im Objekt selbst verankert sein.
+
+Die Anti-Pattern Einwaende sind somit erstmal alle hinfaellig...
+
+
+Lsg: Unsere Service-Schicht verwendet ein neue UniqueEMailSpecification
+
+
+```csharp
+public class Service
+{
+    private UniqueEMailSpecification _uniqueEmail; // more specifications go here
+
+    public Service(IRepo repo)
+    {
+        _uniqueEmail = new UniqueEMailSpecification(repo);
+    }
+    
+    public void CreateNewCustomer(Customer customer)
+    {
+        if (_uniqueEmail.IsSatisfiedBy(customer.EMail)) 
+        {
+            // save new customer to repo
+        }
+    }
+}
+
+public class UniqueEMailSpecification : CompositeSpecification<T>
+{
+    private IRepository _repo;
+    
+    public class UniqueEMailSpecification(IRepository repo)
+    {
+        _repo = repo;
+    }
+
+    public override bool IsSatisfiedBy(string mail)
+    {
+        return !repo.Customers.Contains(x => x.EMail.Equals(mail));
+    }
+}
+```
+
+
+### C#/Java haben jetzt Funktionen als First-Class Citizens
+
+...man ist versucht Funktionen zu uebergeben...
+
+
+```csharp
+public abstract class Specification<T>
+{
+    public abstract Expression<Func<T, bool>> ToExpression();
+ 
+    public bool IsSatisfiedBy(T entity)
+    {
+        Func<T, bool> predicate = ToExpression().Compile();
+        return predicate(entity);
+    }
+}
+```
+
+
+- Hier koennen Leaky-Abstraction Probleme eine Rolle spielen (Bsp C#):
+    - IQueryable (echt fiess: das Interface gibts 2x)
+    - IEnumerable
+    - IList
+    - IReadOnlyCollection
+
+...Potential LSP Violation...
+
+
+### Fazit: Specification Pattern
+
+- Innerhalb einer Entity: kein Problem
+- Von einer Service Klasse: kein Problem
+- Wunderbar um Regeln zu kombinieren
+- Wenn man ein paar Punkte beachtet: kein Problem
+
+
+
+## Take Home Message
+
+- Value Objects: immer
+- Microtypes: manchmal
+- Specification Pattern: oft
+
+
+
+## Fragen?
+
+
+
+## Danke
+
+
+
+- Buecher
+    - E. Evans, Domain-Driven Design (the blue book)
+    - V. Vernon, Implementing Domain-Driven Design (the red book)
+    - S. Millet & N. Tune, Patterns, Principles and Practices of Domain-Driven Design
+    - V. Vernon, Domain-Driven Design Distilled
+- Blogs
+    - http://enterprisecraftsmanship.com/
+- Online trainings
+    - https://www.pluralsight.com/courses/domain-driven-design-in-practice
+
