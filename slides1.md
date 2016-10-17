@@ -20,7 +20,7 @@ Wer praktiziert DDD*?
 - Specification Pattern: Validierung im Kontext einer Entitaet
 
 
-...kurzer Ausflug C# vs Java...
+...kurzer Ausflug Java vs C#...
 
 (no Java-Bashing, I promise)
 
@@ -312,7 +312,7 @@ Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes kompl
 
 ![fun-faceplam](resources/fun-picard-microtypes-ups.jpg)
 
-Darum sind Vortraege sind gut!
+Darum sind Vortraege gut!
 
 
 ### Microtypes
@@ -354,7 +354,7 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 #### Frameworks...
 
 - Als ich angefangen habe, war .NET "einfacher" als Java weil es weniger Frameworks gab.
-- .NET Frameworks haben von anderer gelernt und oft "reifere" Implementierungen nachgeliefert 
+- .NET Frameworks haben von anderen gelernt und oft "reifere" Implementierungen nachgeliefert 
 - Und jetzt: <!-- .element: class="fragment" data-fragment-index="1" -->
     - .NET Core API: moving target <!-- .element: class="fragment" data-fragment-index="1" -->
     - und ich habe Javascript kennengelernt... <!-- .element: class="fragment" data-fragment-index="2" -->
@@ -364,7 +364,7 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 #### Frameworks and Value Objects
 
 - Value Objects sollten immutable sein
-- ORM (Objec-Relational-Mapper) <!-- .element: class="fragment" data-fragment-index="1" -->
+- ORM (Object-Relational-Mapper) <!-- .element: class="fragment" data-fragment-index="1" -->
     - Domaenen Objekte 1-zu-1 mit einem ORM abzubilden <!-- .element: class="fragment" data-fragment-index="1" -->
         - Framework braucht Proxy der Klasse <!-- .element: class="fragment" data-fragment-index="2" -->
             - Jedes Attribut muss einen public setter haben <!-- .element: class="fragment" data-fragment-index="2" -->
@@ -373,7 +373,7 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 
 Muss der setter fuer das Attribut wirklich `public` sein? 
 
-Langt nicht 
+Genuegt nicht 
 - `internal` oder
 - `protected`?
 
@@ -443,6 +443,11 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
 ### Specification Pattern
 
 Zurueck zu Entitaeten... 
+
+
+>"A specification pattern outlines a business rule that is combinable with other business rules."
+
+<span class="small">https://en.wikipedia.org/wiki/Specification_pattern</span>
 
 
 Also zB dem Customer Objekt
