@@ -447,6 +447,8 @@ Zurueck zu Entitaeten...
 
 >"A specification pattern outlines a business rule that is combinable with other business rules."
 
+![uml-specification-pattern](resources/Specification_UML_v2.png)
+
 <span class="small">https://en.wikipedia.org/wiki/Specification_pattern</span>
 
 
@@ -470,3 +472,178 @@ public class Customer {
     }
 }
 ```
+Aber wenn wir diese Regel auch an anderer Stelle im Projekt brauchen?
+
+
+```csharp
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T entity);
+}
+
+public class MandatoryStringSpecification : ISpecification<string>
+{
+    public bool IsSatisfiedBy(string s)
+    {
+        return !string.IsNullOrWhitespace(s);
+    }
+}
+```
+
+```csharp
+public class Customer
+{
+    private MandatoryStringSpecification mandatoryStringSpec = 
+        new MandatoryStringSpecification();
+
+    public bool IsValid()
+    {
+        if (!mandatoryStringSpec.IsSatisfiedBy(this.EMailAddress.Value))
+        {
+            throw new MyMandatoryFieldMissingException(nameof(this.EMailAddress));
+        }
+    }
+}
+```
+
+
+Nett, aber das geht noch besser: Regeln koennen auch miteinander kombiniert werden.
+
+Beispiel von Wikipedia:
+
+- Rechnung ist ueberfaellig
+- Mahnung wurde verschickt
+- Noch nicht bei Inkasso
+
+```csharp
+var OverDue = new OverDueSpecification();
+var NoticeSent = new NoticeSentSpecification();
+var InCollection = new InCollectionSpecification();
+
+// example of specification pattern logic chaining
+var SendToCollection = OverDue.And(NoticeSent).And(InCollection.Not());
+
+var InvoiceCollection = Service.GetInvoices();
+
+foreach (var currentInvoice in InvoiceCollection) {
+    if (SendToCollection.IsSatisfiedBy(currentInvoice))  {
+        currentInvoice.SendToCollection();
+    }
+}
+```
+
+
+```csharp
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T entity);
+    ISpecification<T> And(ISpecification<T> other);
+    ISpecification<T> AndNot(ISpecification<T> other);
+    ISpecification<T> Or(ISpecification<T> other);
+    ISpecification<T> OrNot(ISpecification<T> other);
+    ISpecification<T> Not();
+}
+```
+
+
+CompositeSpecification
+```csharp
+public abstract class CompositeSpecification<T> : ISpecification<T>
+{
+    public abstract bool IsSatisfiedBy(T entity);
+
+    public ISpecification<T> And(ISpecification<T> other)
+    {
+        return new AndSpecification<T>(this, other);
+    }
+
+    public ISpecification<T> AndNot(ISpecification<T> other)
+    {
+        return new AndNotSpecification<T>(this, other);
+    }
+
+    public ISpecification<T> Or(ISpecification<T> other)
+    {
+        return new OrSpecification<T>(this, other);
+    }
+
+    public ISpecification<T> OrNot(ISpecification<T> other)
+    {
+        return new OrNotSpecification<T>(this, other);
+    }
+
+    public ISpecification<T> Not()
+    {
+        return new NotSpecification<T>(this);
+    }
+}
+```
+
+
+AndSpecification
+```csharp
+public class AndSpecification<T> : CompositeSpecification<T>
+{
+    private readonly ISpecification<T> left;
+    private readonly ISpecification<T> right;
+
+    public AndSpecification(ISpecification<T> left, ISpecification<T> right)
+    {
+        this.left = left;
+        this.right = right;
+    }
+
+    public override bool IsSatisfiedBy(T candidate)
+    {
+        return left.IsSatisfiedBy(candidate) && right.IsSatisfiedBy(candidate);
+    }
+}
+```
+
+
+OrSpecification
+```csharp
+public class OrSpecification<T> : CompositeSpecification<T>
+{
+    private readonly ISpecification<T> left;
+    private readonly ISpecification<T> right;
+
+    public OrSpecification(ISpecification<T> left, ISpecification<T> right)
+    {
+        this.left = left;
+        this.right = right;
+    }
+
+    public override bool IsSatisfiedBy(T candidate)
+    {
+        return left.IsSatisfiedBy(candidate) || right.IsSatisfiedBy(candidate);
+    }
+}
+```
+
+
+Ist das ein Anti-Pattern?
+
+- Inner-Plattform effect: `And()` implementiert Plattform-Methode `&&`
+- Spaghetti-Code: Potentielle Kohaesion wird in eigene Klassen aufgeteilt
+
+
+Alternative Loesung ohne Specification Pattern:
+
+```csharp
+var InvoiceCollection = Service.GetInvoices();
+foreach (Invoice currentInvoice in InvoiceCollection) {
+    currentInvoice.SendToCollectionIfNecessary();
+}
+
+//.. in the Invoice partial class:
+
+public bool ShouldSendToCollection { get { return currentInvoice.OverDue && currentInvoice.NoticeSent && currentInvoice.InCollection == false; }}
+
+public void SendToCollectionIfNecessary()
+{
+    //Guard condition - with each of those new properties
+    if (!ShouldSendToCollection) return;
+    this.SendToCollection();
+}
+``` 
