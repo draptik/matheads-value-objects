@@ -101,6 +101,9 @@ public class Customer
 - Adresse
 
 
+![funx-winter-value-object](resources/fun-winter-value-object.jpg)
+
+
 ...hat wahrscheinlich jeder schon mal gesehen:
 ```csharp
 public class Customer
@@ -299,11 +302,7 @@ public abstract class ValueObject<T> where T : ValueObject<T>
     }
 
     public override int GetHashCode() {
-        int hash = 17;
-        foreach (var obj in this.GetAttributesToIncludeInEqualityCheck())
-            hash = hash * 31 + (obj == null ? 0 : obj.GetHashCode());
-        
-        return hash;
+        //...
     }
 }
 ```
@@ -325,6 +324,7 @@ public class EMailAddress : ValueObject<EMAilAddress>
     {
         return new object[] { Value };
     }
+    //...
 }
 ```
 
@@ -340,11 +340,11 @@ Bonus: Testen ist sehr einfach<!-- .element: class="fragment" data-fragment-inde
 
 Immer dann, wenn
 - der Basistyp (z.B. string) eigentlich ein Konzept der Dom&auml;ne ist (z.B. IP Adresse, Zahl & W&auml;hrung)
-- die Property keinen Lebenszykus hat (z.B. Lieferadresse)
+-  die Property keinen Lebenszykus hat (z.B. Lieferadresse)
 
 
 
-### Microtypes
+## Microtypes
 
 
 #### Fun fact 
@@ -370,7 +370,6 @@ Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dac
 public class InternalEMailAddress 
     : ValueObject<InternalEMailAddress> {
 
-    // ctor
     public InternalEMailAddress(EMAilAddress value) {
         
         if (!IsInternalEMailAddress(value)) { /* throw */ }
@@ -387,30 +386,20 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 
 
 
-### Frameworks und Value Objects
+## Frameworks und Value Objects
 
 
 ![fun-framework](resources/fun-frameworks-any.jpg)
 
 
-#### Frameworks...
+### Frameworks...
 
 - Als ich angefangen habe, war .NET "einfacher" als Java weil es weniger Frameworks gab.
 - .NET Frameworks haben von anderen gelernt und oft "reifere" Implementierungen nachgeliefert 
 - Und jetzt: <!-- .element: class="fragment" data-fragment-index="1" -->
     - .NET Core API: moving target <!-- .element: class="fragment" data-fragment-index="1" -->
     - und ich habe Javascript kennengelernt... <!-- .element: class="fragment" data-fragment-index="2" -->
-    - w&auml;hrend dieses Talks wurde wahrscheinlich ein neues Javascript-Framework entwickelt <!-- .element: class="fragment" data-fragment-index="2" -->
-
-
-#### Frameworks and Value Objects
-
-- Value Objects sollten immutable sein
-- ORM (Object-Relational-Mapper) <!-- .element: class="fragment" data-fragment-index="1" -->
-    - Dom&auml;nen Objekte 1-zu-1 mit einem ORM abzubilden <!-- .element: class="fragment" data-fragment-index="1" -->
-        - Framework braucht Proxy der Klasse <!-- .element: class="fragment" data-fragment-index="2" -->
-            - Jedes Attribut muss einen public setter haben <!-- .element: class="fragment" data-fragment-index="2" -->
-            - Constructor muss parameterlos sein <!-- .element: class="fragment" data-fragment-index="2" -->
+    - w&auml;hrend dieses Talks wurde wahrscheinlich ein neues Javascript-Framework entwickelt <!-- .element: class="fragment" data-fragment-index="2" --> 
 
 
 Muss der setter fuer das Attribut wirklich `public` sein? 
@@ -501,7 +490,7 @@ Business Regeln in eigene Objekte auslagern<!-- .element: class="fragment" data-
 Eric Evans in Domain Driven Design
 
 
-*"Specification pattern is a pattern that allows us to **encapsulate some piece of domain knowledge into a single unit** – specification – and reuse it in different parts of the code base."*
+*"Specification pattern is a pattern that allows us to **encapsulate some piece of domain knowledge into a single unit – specification – and reuse it in different parts of the code base.**"*
 
 Vladimir Khorikov
 
@@ -654,6 +643,7 @@ public abstract class CompositeSpecification<T> : ISpecification<T>
 
 
 AndSpecification
+
 ```csharp
 public class AndSpecification<T> : CompositeSpecification<T>
 {
@@ -675,6 +665,7 @@ public class AndSpecification<T> : CompositeSpecification<T>
 
 
 NotSpecification
+
 ```csharp
 public class NotSpecification<T> : CompositeSpecification<T>
 {
@@ -780,39 +771,10 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 ```
 
 
-### C#/Java haben jetzt Funktionen als First-Class Citizens
-
-...man ist versucht Funktionen zu &uuml;bergeben...
-
-
-```csharp
-public abstract class Specification<T>
-{
-    public abstract Expression<Func<T, bool>> ToExpression();
- 
-    public bool IsSatisfiedBy(T entity)
-    {
-        Func<T, bool> predicate = ToExpression().Compile();
-        return predicate(entity);
-    }
-}
-```
-
-
-- Hier k&ouml;nnen Leaky-Abstraction Probleme eine Rolle spielen (Bsp C#):
-    - IQueryable (echt fie&sylig;: das Interface gibts 2x)
-    - IEnumerable
-    - IList
-    - IReadOnlyCollection
-
-...Potential LSP Violation...
-
-
 ### Fazit: Specification Pattern
 
 - Innerhalb einer Entity: kein Problem
 - Von einer Service Klasse: kein Problem
-- Wenn man ein paar Punkte beachtet: kein Problem
 - V.a. dann n&uuml;tzlich, wenn die Regeln 
     - an mehreren Stellen verwendet werden und 
     - kombinierbar sein sollen
@@ -827,14 +789,6 @@ public abstract class Specification<T>
 
 
 
-## Fragen?
-
-
-
-## Danke
-
-
-
 Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 - Buecher
     - E. Evans, Domain-Driven Design (the blue book)
@@ -846,3 +800,10 @@ Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 - Online trainings
     - https://www.pluralsight.com/courses/domain-driven-design-in-practice
 
+
+
+## Danke
+
+
+
+## Fragen?
