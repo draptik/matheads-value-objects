@@ -6,7 +6,7 @@
     max-height: 700px;
 }
 
-img[alt=fun-framework] { width: 1000px; }
+img[alt^=fun-] { width: 800px; }
 
 .small a {
     font-size: medium;

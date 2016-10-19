@@ -1,5 +1,5 @@
 ## Value Objects, Microtypes und das Specification Pattern
-#### (die oft unterschaetzten Bausteine von DDD*)
+#### (die oft untersch&auml;tzten Bausteine von DDD*)
 
 Patrick Drechsler
 
@@ -13,11 +13,11 @@ Wer praktiziert DDD*?
 
 ### Inhalt
 
-- Value Objects: Was ist das - und warum braucht man das?
+- Value Objects: Was ist das?
 - Microtypes: Was ist das?
 - Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id"
 - Persistenz: "was mache ich mit Collections?"
-- Specification Pattern: Business Regeln (auch zwischen Entitaeten)
+- Specification Pattern: Business Regeln (auch zwischen Entit&auml;ten)
 
 
 ...kurzer Ausflug Java vs C#...
@@ -92,11 +92,11 @@ public class Customer
 
 #### Typische Kandidaten
 
-- String-Werte, die fuer die Domaene von Bedeutung sind
+- String-Werte, die fuer die Dom&auml;ne von Bedeutung sind
     - IP Adresse
     - IBAN
-- Kombinationen aus Betrag und Waehrung/Einheit
-    - Betrag und Waehrung (42 EUR)
+- Kombinationen aus Betrag und W&auml;hrung/Einheit
+    - Betrag und W&auml;hrung (42 EUR)
     - Wert und Einheit (23.4 kg)
 - Adresse
 
@@ -154,6 +154,34 @@ public class EMailAddress
 ```
 
 
+Value Object "zu Fu&szlig;" 
+```csharp
+public class EMailAddress 
+{
+    public EMailAddress(string value)
+    {
+        if (!IsValidEmailAddress(value)) 
+            throw new MyInvalidEMailAddressException(value);
+        
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    private bool IsValidEmailAddress(string value)
+    {
+        try 
+        {
+            new System.Net.Mail.MailAddress(value).Address = value;
+        }
+        catch { return false; }
+    }
+}
+```
+- Kein Default-Konstruktor
+- Kein public setter fuer Value
+
+
 ```csharp
 public class Customer 
 {
@@ -162,11 +190,12 @@ public class Customer
 }
 ```
 
-- Die Klasse Customer kann nur gueltige Email Adresse haben 
-- Das klaert nicht die Frage, ob eine Email fuer den Customer verpflichtend ist (dazu spaeter mehr beim Specification Pattern)
+- Die Klasse Customer kann nur g&uuml;ltige Email Adresse haben 
+- Das kl&auml;rt nicht die Frage, ob eine Email f&uuml;r den Customer verpflichtend ist (dazu sp&auml;ter mehr beim Specification Pattern)
 
 
 ```csharp
+// within some service class
 public void DoSomething(EMailAddress mailOrig, EMailAddress mailNew)
 {
     if (mailOrig.Equals(mailNew)) 
@@ -207,6 +236,8 @@ Equality by structure
 <span class="small">http://enterprisecraftsmanship.com/2016/01/11/entity-vs-value-object-the-ultimate-list-of-differences/</span>
 
 
+#### Erstellen einer Value Object Klasse (1/3)
+
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> 
 {
@@ -215,6 +246,8 @@ public abstract class ValueObject<T> where T : ValueObject<T>
 }    
 ```
 
+
+#### Erstellen einer Value Object Klasse (2/3)
 
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> 
@@ -238,6 +271,8 @@ public abstract class ValueObject<T> where T : ValueObject<T>
 }    
 ```
 
+
+#### Erstellen einer Value Object Klasse (3/3)
 
 ```csharp
 public abstract class ValueObject<T> where T : ValueObject<T> 
@@ -294,22 +329,18 @@ public class EMailAddress : ValueObject<EMAilAddress>
 ```
 
 
-#### Vergleichbarkeit fuer Value Objects
+#### Vergleichbarkeit f&uuml;r Value Objects
 
-Man ueberschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
+Man &uuml;berschreibt die `Equals` und `GetHashCode` Methoden, damit nur die Attribute (aka Properties) verglichen werden.
 
 Bonus: Testen ist sehr einfach<!-- .element: class="fragment" data-fragment-index="1" -->
 
 
 ### Fazit: Value Objects
 
-Wenn der Basistyp (z.B. string) eigentlich ein Konzept der Domaene ist
-
-- Beispiele:
-    - EMail Adresse
-    - IP Adresse
-    - Zahl und Einheit/Waehrung
-    - Adresse
+Immer dann, wenn
+- der Basistyp (z.B. string) eigentlich ein Konzept der Dom&auml;ne ist (z.B. IP Adresse, Zahl & W&auml;hrung)
+- die Property keinen Lebenszykus hat (z.B. Lieferadresse)
 
 
 
@@ -318,16 +349,17 @@ Wenn der Basistyp (z.B. string) eigentlich ein Konzept der Domaene ist
 
 #### Fun fact 
 
-Als ich den Vortrag eingereicht habe, war mein Verstaendnis von Microtypes komplett falsch. 
+Als ich den Vortrag eingereicht habe, war mein Verst&auml;ndnis von Microtypes komplett falsch. 
+
 
 ![fun-faceplam](resources/fun-picard-microtypes-ups.jpg)
 
-Darum sind Vortraege gut!
+Note: Darum sind Vortraege gut!
 
 
 ### Microtypes
 
-Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dachte ich urspruenglich).
+Mit Microtypes sind nicht etwa kleinere Einheiten von Value Objects gemeint (dachte ich urspr&uuml;nglich).
 
 
 ### Microtypes
@@ -368,14 +400,14 @@ Scott Millet/Mick Tune in Patterns, Principles and Practices of Domain-Driven De
 - Und jetzt: <!-- .element: class="fragment" data-fragment-index="1" -->
     - .NET Core API: moving target <!-- .element: class="fragment" data-fragment-index="1" -->
     - und ich habe Javascript kennengelernt... <!-- .element: class="fragment" data-fragment-index="2" -->
-    - waehrend dieses Talks wurde wahrscheinlich ein neues Javascript-Framework entwickelt <!-- .element: class="fragment" data-fragment-index="2" -->
+    - w&auml;hrend dieses Talks wurde wahrscheinlich ein neues Javascript-Framework entwickelt <!-- .element: class="fragment" data-fragment-index="2" -->
 
 
 #### Frameworks and Value Objects
 
 - Value Objects sollten immutable sein
 - ORM (Object-Relational-Mapper) <!-- .element: class="fragment" data-fragment-index="1" -->
-    - Domaenen Objekte 1-zu-1 mit einem ORM abzubilden <!-- .element: class="fragment" data-fragment-index="1" -->
+    - Dom&auml;nen Objekte 1-zu-1 mit einem ORM abzubilden <!-- .element: class="fragment" data-fragment-index="1" -->
         - Framework braucht Proxy der Klasse <!-- .element: class="fragment" data-fragment-index="2" -->
             - Jedes Attribut muss einen public setter haben <!-- .element: class="fragment" data-fragment-index="2" -->
             - Constructor muss parameterlos sein <!-- .element: class="fragment" data-fragment-index="2" -->
@@ -409,7 +441,7 @@ public class MyDbContext
     }
 }   
 ```
-Warum das ComplexType heisst, ist mir auch ein Raetsel...
+Note: Warum das ComplexType heisst, ist mir auch ein Raetsel...
 
 
 Alternative: ORM nicht verwenden
@@ -426,7 +458,7 @@ Kann man die Liste von EMail-Adressen nicht abbilden als:<!-- .element: class="f
 - WorkEMailAddress<!-- .element: class="fragment" data-fragment-index="2" -->
 - OtherEMailAddress<!-- .element: class="fragment" data-fragment-index="2" -->
 
-Fazit: Die Frage, wie man das technisch loest, wird umgangen.<!-- .element: class="fragment" data-fragment-index="3" -->
+Fazit: Die Frage, wie man das technisch l&ouml;st, wird erstmal umgangen.<!-- .element: class="fragment" data-fragment-index="3" -->
 
 
 #### Wie speichert man Listen von Value Objects?
@@ -443,13 +475,13 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
 
 ##### Die Frage sollte sein:
 
-- Wenn man eine **grosse** Collection von Value Objects hat: 
-    - Sind das dann wirklich noch Value Objects und nicht eher Entitaeten?<!-- .element: class="fragment" data-fragment-index="0" -->
+- Wenn man eine **gro&szlig;e** Collection von Value Objects hat: 
+    - Sind das dann wirklich noch Value Objects und nicht eher Entit&auml;ten?<!-- .element: class="fragment" data-fragment-index="0" -->
     - Ist NoSQL besser geeignet (z.B. MongoDb)?<!-- .element: class="fragment" data-fragment-index="1" -->
     - oder einfach nur Ids/URLs auf einen anderen Storage?<!-- .element: class="fragment" data-fragment-index="2" -->
         - In-Memory (Redis)<!-- .element: class="fragment" data-fragment-index="2" -->
         - Search Engine (Solar, Elastic)<!-- .element: class="fragment" data-fragment-index="2" -->
-        - andere Big Data Loesungen<!-- .element: class="fragment" data-fragment-index="2" -->
+        - andere Big Data L&ouml;sungen<!-- .element: class="fragment" data-fragment-index="2" -->
 
 
 
@@ -497,6 +529,25 @@ public class Customer {
 Aber wenn wir diese Regel auch an anderer Stelle im Projekt brauchen?
 
 
+Extrahieren wir die IsValid Methode in eine eigene Klasse:
+
+```csharp
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T entity);
+}
+
+public class MandatoryStringSpecification : ISpecification<string>
+{
+    public bool IsSatisfiedBy(string s)
+    {
+        return !string.IsNullOrWhitespace(s);
+    }
+}
+```
+Bonus: Testbarkeit
+
+
 ```csharp
 public interface ISpecification<T>
 {
@@ -515,12 +566,12 @@ public class MandatoryStringSpecification : ISpecification<string>
 ```csharp
 public class Customer
 {
-    private MandatoryStringSpecification mandatoryStringSpec = 
+    private MandatoryStringSpecification mandatoryString = 
         new MandatoryStringSpecification();
 
     public bool IsValid()
     {
-        if (!mandatoryStringSpec.IsSatisfiedBy(this.EMailAddress.Value))
+        if (!mandatoryString.IsSatisfiedBy(this.EMailAddress.Value))
         {
             throw new MyMandatoryFieldMissingException(nameof(this.EMailAddress));
         }
@@ -529,13 +580,13 @@ public class Customer
 ```
 
 
-Nett, aber das geht noch besser: Regeln koennen auch miteinander kombiniert werden.
+Nett, aber das geht noch besser: Regeln k&ouml;nnen auch miteinander kombiniert werden.
 
 
 Beispiel von M. Fowler & E. Evans (Wikipedia):
 
 - Wenn
-    - Rechnung ueberfaellig UND
+    - Rechnung ueberf&auml;llig UND
     - Mahnung verschickt UND
     - Noch nicht bei Inkasso
 
@@ -561,12 +612,12 @@ foreach (var currentInvoice in invoiceCollection) {
 }
 ```
 - Rechnung ("Invoice")
-- Rechnung ist ueberfaellig ("OverDue")
+- Rechnung ist ueberf&auml;llig ("OverDue")
 - Mahnung wurde verschickt ("NoticeSent")
 - Noch nicht bei Inkasso ("InCollection.Not()")
 
 
-Wie ermoeglicht man die Kombinierbarkeit der Specifications?
+Wie erm&ouml;glicht man die Kombinierbarkeit der Specifications?
 ```csharp
 public interface ISpecification<T>
 {
@@ -598,6 +649,8 @@ public abstract class CompositeSpecification<T> : ISpecification<T>
     //...
 }
 ```
+- R&uuml;ckgabewert ist immer vom Typ ISpecification
+- Fluent API (aka Builder Pattern)
 
 
 AndSpecification
@@ -643,14 +696,14 @@ public class NotSpecification<T> : CompositeSpecification<T>
 #### Ist das ein Anti-Pattern?
 
 - Inner-Plattform effect: "And()" implementiert Plattform-Methode "&&"
-- Spaghetti-Code: Potentielle Kohaesion wird in eigene Klassen aufgeteilt
+- Spaghetti-Code: Potentielle Koh&auml;sion wird in eigene Klassen aufgeteilt
 
 
-Alternative Loesung ohne Specification Pattern:
+Alternative L&ouml;sung ohne Specification Pattern:
 
 ```csharp
 //.. in the service class
-var invoiceCollection = Service.GetInvoices();
+var invoiceCollection = anotherService.GetInvoices();
 foreach (Invoice currentInvoice in invoiceCollection) 
 {
     currentInvoice.SendToCollectionIfNecessary();
@@ -675,22 +728,22 @@ public class Invoice
 ```
 
 
-Was ist mit Regeln, die objektuebergreifend sind?
+Was ist mit Regeln, die **objekt&uuml;bergreifend** sind?
 
 
 Z.B.: Eine EMail darf nur einem Kunden zugewiesen sein
 
-Anders ausgedrueckt: Das Anlegen eines neuen Kunden soll unterbunden werden, wenn die EMail schon einem anderen Kunden zugewiesen ist. 
+Anders ausgedr&uuml;ckt: Das Anlegen eines neuen Kunden soll unterbunden werden, wenn die EMail schon einem anderen Kunden zugewiesen ist. 
 
 
-Spaetestens jetzt genuegt das einzelne Kundenobjekt nicht mehr. 
+Sp&auml;testens jetzt gen&uuml;gt das einzelne Kundenobjekt nicht mehr. 
 
-Wir muessen eine externe Quelle anzapfen.
+Wir m&uuml;ssen eine externe Quelle anzapfen.
 
 
 Unsere Business Regel kann nicht mehr im Objekt selbst verankert sein.
 
-Die Anti-Pattern Einwaende sind somit erstmal alle hinfaellig...
+Die Anti-Pattern Einw&auml;nde sind somit erstmal alle hinf&auml;llig...
 
 
 Lsg: Unsere Service-Schicht verwendet ein neue UniqueEMailSpecification
@@ -701,17 +754,14 @@ public class Service
 {
     private UniqueEMailSpecification _uniqueEmail; // more specifications go here
 
-    public Service(IRepo repo)
-    {
+    public Service(IRepo repo) {
         _uniqueEmail = new UniqueEMailSpecification(repo);
     }
     
-    public void CreateNewCustomer(Customer customer)
-    {
-        if (_uniqueEmail.IsSatisfiedBy(customer.EMail)) 
-        {
+    public void CreateNewCustomer(Customer customer) {
+        if (_uniqueEmail.IsSatisfiedBy(customer.EMail)) {
             // save new customer to repo
-        }
+        } else { /* handle error case (ie throw) */ }
     }
 }
 
@@ -719,13 +769,11 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 {
     private IRepository _repo;
     
-    public class UniqueEMailSpecification(IRepository repo)
-    {
+    public class UniqueEMailSpecification(IRepository repo) {
         _repo = repo;
     }
 
-    public override bool IsSatisfiedBy(string mail)
-    {
+    public override bool IsSatisfiedBy(string mail) {
         return !repo.Customers.Contains(x => x.EMail.Equals(mail));
     }
 }
@@ -734,7 +782,7 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 
 ### C#/Java haben jetzt Funktionen als First-Class Citizens
 
-...man ist versucht Funktionen zu uebergeben...
+...man ist versucht Funktionen zu &uuml;bergeben...
 
 
 ```csharp
@@ -751,8 +799,8 @@ public abstract class Specification<T>
 ```
 
 
-- Hier koennen Leaky-Abstraction Probleme eine Rolle spielen (Bsp C#):
-    - IQueryable (echt fiess: das Interface gibts 2x)
+- Hier k&ouml;nnen Leaky-Abstraction Probleme eine Rolle spielen (Bsp C#):
+    - IQueryable (echt fie&sylig;: das Interface gibts 2x)
     - IEnumerable
     - IList
     - IReadOnlyCollection
@@ -764,8 +812,10 @@ public abstract class Specification<T>
 
 - Innerhalb einer Entity: kein Problem
 - Von einer Service Klasse: kein Problem
-- Wunderbar um Regeln zu kombinieren
 - Wenn man ein paar Punkte beachtet: kein Problem
+- V.a. dann n&uuml;tzlich, wenn die Regeln 
+    - an mehreren Stellen verwendet werden und 
+    - kombinierbar sein sollen
 
 
 
@@ -785,6 +835,7 @@ public abstract class Specification<T>
 
 
 
+Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 - Buecher
     - E. Evans, Domain-Driven Design (the blue book)
     - V. Vernon, Implementing Domain-Driven Design (the red book)
