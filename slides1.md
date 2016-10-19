@@ -20,59 +20,6 @@ Wer praktiziert DDD*?
 - Specification Pattern: Business Regeln (auch zwischen Entit&auml;ten)
 
 
-...kurzer Ausflug Java vs C#...
-
-(no Java-Bashing, I promise)
-
-
-```java
-// Java
-public class Customer {
-
-    private string name;
-
-    public void setName(string value) {
-        this.name = value;
-    }
-
-    public string getName() {
-        return this.name;
-    }
-}
-```
-
-```csharp
-// C#
-public class Customer 
-{
-    public string Name { get; set; }
-}
-```
-
-
-```java
-// Java
-public class Customer {
-
-    private string name;    
-
-    public Customer(string name) { this.name = name; }
-
-    public string getName() { return this.name; }
-}
-```
-
-```csharp
-// C#
-public class Customer 
-{
-    public Customer(string name) { this.Name = name; }
-
-    public string Name { get; }
-}
-```
-
-
 
 ### Was ist eine Entity?
 
