@@ -110,16 +110,15 @@ public class Customer
     public string EMailAddress { get; set; }
 }
 ```
-Probleme: <!-- .element: class="fragment" data-fragment-index="1" -->
+Problem: <!-- .element: class="fragment" data-fragment-index="1" -->
 - Datentyp 'string' passt nicht wirklich zu EMail Adresse. <!-- .element: class="fragment" data-fragment-index="1" -->
-- EMailAddress hat einen public setter. <!-- .element: class="fragment" data-fragment-index="1" -->
 
 
 ```csharp
 public class Customer 
 {
     //...
-    public EMailAddress EMailAddress { get; private set; }
+    public EMailAddress EMailAddress { get; set; }
 }
 ```
 
