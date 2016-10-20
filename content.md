@@ -9,14 +9,20 @@ Wer praktiziert DDD*?
 
 (*Domain Driven Design)
 
+Note:
+- Wenn wenig Leute antworten: 
+    - Wer hat schon mal von Domain-Driven Design gehoert?
+    - Wer wuerde gerne DDD einsetzen?
+
 
 
 ### Inhalt
 
-- Value Objects: Was ist das?
-- Microtypes: Was ist das?
-- Persistenz: "...aber mein Framework (zB ORM) mag keine Objekte ohne Id"
-- Persistenz: "was mache ich mit Collections?"
+- Value Objects
+    - Was ist das?
+    - Microtypes: Was ist das?
+    - Persistenz: "mein Framework mag keine Value Objects"
+    - Persistenz: "was mache ich mit Collections?"
 - Specification Pattern: Business Regeln (auch zwischen Entit&auml;ten)
 
 
@@ -42,8 +48,8 @@ Wer praktiziert DDD*?
 - String-Werte, die fuer die Dom&auml;ne von Bedeutung sind
     - IP Adresse
     - IBAN
-- Kombinationen aus Betrag und W&auml;hrung/Einheit
-    - Betrag und W&auml;hrung (42 EUR)
+- Kombinationen wie
+    - Betrag und W&auml;hrung (42,13 EUR)
     - Wert und Einheit (23.4 kg)
 - Adresse
 
@@ -110,21 +116,17 @@ public class EMailAddress
 {
     public EMailAddress(string value)
     {
-        if (!IsValidEmailAddress(value)) 
-            throw new MyInvalidEMailAddressException(value);
+        if (!IsValidEmailAddress(value)) { 
+            /* throw */ 
+        }
         
         Value = value;
     }
 
     public string Value { get; }
 
-    private bool IsValidEmailAddress(string value)
-    {
-        try 
-        {
-            new System.Net.Mail.MailAddress(value).Address = value;
-        }
-        catch { return false; }
+    private bool IsValidEmailAddress(string value) {
+        // ...
     }
 }
 ```
@@ -421,7 +423,7 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
 
 
 
-### Specification Pattern
+## Specification Pattern
 
 Business Regeln in eigene Objekte auslagern<!-- .element: class="fragment" data-fragment-index="0" -->
 
@@ -445,8 +447,9 @@ Vladimir Khorikov
 Also z.B. dem Customer Objekt
 
 ```csharp
-public class Customer {
-    public int Id { get; set; }
+public class Customer 
+{
+    //..
     public EMailAddress EMailAddress { get; set; }
 }
 ```
@@ -455,7 +458,8 @@ public class Customer {
 - EMail ist ein Pflichtfeld
 - Wie waers mit einer **IsValid** Methode?
 ```csharp
-public class Customer {
+public class Customer 
+{
     //..
     public bool IsValid() {
         return EMAilAddress != null;
@@ -468,17 +472,17 @@ Aber wenn wir diese Regel auch an anderer Stelle im Projekt brauchen?
 Extrahieren wir die IsValid Methode in eine eigene Klasse:
 
 ```csharp
-public interface ISpecification<T>
-{
-    bool IsSatisfiedBy(T entity);
-}
-
 public class MandatoryStringSpecification : ISpecification<string>
 {
     public bool IsSatisfiedBy(string s)
     {
         return !string.IsNullOrWhitespace(s);
     }
+}
+
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T entity);
 }
 ```
 Bonus: Testbarkeit
@@ -519,10 +523,10 @@ public class Customer
 Nett, aber das geht noch besser: Regeln k&ouml;nnen auch miteinander kombiniert werden.
 
 
-Beispiel von M. Fowler & E. Evans (Wikipedia):
+[Beispiel von M. Fowler & E. Evans](http://www.martinfowler.com/apsupp/spec.pdf) ([Wikipedia](https://en.wikipedia.org/wiki/Specification_pattern)):
 
 - Wenn
-    - Rechnung ueberf&auml;llig UND
+    - Rechnung &uuml;berf&auml;llig UND
     - Mahnung verschickt UND
     - Noch nicht bei Inkasso
 
@@ -548,7 +552,7 @@ foreach (var currentInvoice in invoiceCollection) {
 }
 ```
 - Rechnung ("Invoice")
-- Rechnung ist ueberf&auml;llig ("OverDue")
+- Rechnung ist &uuml;berf&auml;llig ("OverDue")
 - Mahnung wurde verschickt ("NoticeSent")
 - Noch nicht bei Inkasso ("InCollection.Not()")
 
@@ -568,6 +572,7 @@ public interface ISpecification<T>
 
 
 CompositeSpecification
+
 ```csharp
 public abstract class CompositeSpecification<T> : ISpecification<T>
 {
@@ -631,10 +636,10 @@ public class NotSpecification<T> : CompositeSpecification<T>
 ```
 
 
-#### Ist das ein Anti-Pattern?
-
-- Inner-Plattform effect: "And()" implementiert Plattform-Methode "&&"
-- Spaghetti-Code: Potentielle Koh&auml;sion wird in eigene Klassen aufgeteilt
+#### Ist das ein Anti-Pattern (Laut Wikipedia)?
+- Cargo-Cult programming: *"...is a style of computer programming characterized by the ritual inclusion of code or program structures that serve no real purpose."*
+- **Inner-Plattform effect**: "And()" implementiert Plattform-Methode "&&"
+- **Spaghetti-Code**: Potentielle Koh&auml;sion wird in eigene Klassen aufgeteilt
 
 
 Alternative L&ouml;sung ohne Specification Pattern:
@@ -734,10 +739,12 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 - Microtypes: manchmal
 - Specification Pattern: oft
 
+Alles einsetzbar, ohne DDD
 
-
+ 
+ 
 Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
-- Buecher
+- B&uuml;cher
     - E. Evans, Domain-Driven Design (the blue book)
     - V. Vernon, Implementing Domain-Driven Design (the red book)
     - S. Millet & N. Tune, Patterns, Principles and Practices of Domain-Driven Design
@@ -754,3 +761,5 @@ Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 
 
 ## Fragen?
+
+Interesse an einem Vortrag &uuml;ber CQRS/Eventsourcing?<!-- .element: class="fragment" data-fragment-index="1" -->
