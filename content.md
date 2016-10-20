@@ -741,7 +741,7 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 
 Alles einsetzbar, ohne DDD
 
- 
+
  
 Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 - B&uuml;cher
