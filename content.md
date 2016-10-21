@@ -375,8 +375,10 @@ public class MyDbContext
     //...
     protected override void OnModelCreating(DbModelBuilder mb) 
     {
-        mb.ComplexType<EMailAddress>();
+        mb.ComplexType<EMailAddress>(); // <-- Value Object
     }
+
+    public DbSet<Customer> Customers { get; set; } // <-- Entity
 }   
 ```
 Note: Warum das ComplexType heisst, ist mir auch ein Raetsel...
@@ -387,7 +389,15 @@ Alternative: ORM nicht verwenden
 (gerade im Umfeld von CQRS und Eventsourcing)
 
 
-#### Wie speichert man Listen von Value Objects?
+### Fazit: Value Objects und Frameworks
+
+- Eigenschaften der Sprache nutzen (Sichtbarkeit von Settern)
+- Dokumentation des Frameworks konsultieren
+- Auf Framework verzichten
+
+
+
+### Wie speichert man Listen von Value Objects?
 
 DDD: Ist das wirklich eine Collection?<!-- .element: class="fragment" data-fragment-index="1" -->
 
@@ -420,6 +430,14 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
         - In-Memory (Redis)<!-- .element: class="fragment" data-fragment-index="2" -->
         - Search Engine (Solar, Elastic)<!-- .element: class="fragment" data-fragment-index="2" -->
         - andere Big Data L&ouml;sungen<!-- .element: class="fragment" data-fragment-index="2" -->
+
+
+### Fazit: Value Objects und Collections
+
+- Collections werden serialisiert
+- Gro&szlig;e Collections:
+    - in Entities umwandeln
+    - auslagern
 
 
 
@@ -739,10 +757,10 @@ public class UniqueEMailSpecification : CompositeSpecification<T>
 - Microtypes: manchmal
 - Specification Pattern: oft
 
-Alles einsetzbar, ohne DDD
+Alles auch ohne DDD einsetzbar 
 
 
- 
+
 Beste &Uuml;bersichtsseite: https://github.com/heynickc/awesome-ddd
 - B&uuml;cher
     - E. Evans, Domain-Driven Design (the blue book)
