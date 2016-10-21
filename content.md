@@ -289,7 +289,8 @@ Bonus: Testen ist sehr einfach<!-- .element: class="fragment" data-fragment-inde
 
 Immer dann, wenn
 - der Basistyp (z.B. string) eigentlich ein Konzept der Dom&auml;ne ist (z.B. IP Adresse, Zahl & W&auml;hrung)
--  die Property keinen Lebenszykus hat (z.B. Lieferadresse)
+- die Property keinen Lebenszykus hat (z.B. Lieferadresse)
+- soviel Logik wie m&ouml;glich
 
 
 
