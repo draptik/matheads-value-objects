@@ -4,9 +4,11 @@ I removed the original `.git` folder so I could track my changes via git.
 
 My content is located at:
 
-- `slides*.md`
+- `content.md`
+
+A pdf version of the slides is located at `pdf/talk-value-objects.pdf`.
 
 My style changes are located at:
 
-- `index.html` (reference to `slides*.md` and `css/custom.css`)
+- `index.html` (reference to `content.md` and `css/custom.css`)
 - `css/custom.css`
