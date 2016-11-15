@@ -435,7 +435,7 @@ serialized string: JSON, XML, ...<!-- .element: class="fragment" data-fragment-i
 
 ### Fazit: Value Objects und Collections
 
-- Collections werden serialisiert
+- Collections k&ouml;nnen serialisiert werden
 - Gro&szlig;e Collections:
     - in Entities umwandeln
     - auslagern
